@@ -1,0 +1,37 @@
+# reading_app.kv
+
+<HomeScreen>:
+    name: 'home'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDToolbar:
+            title: "Novels, Plays, and Stories"
+            elevation: 10
+        ScrollView:
+            MDList:
+                id: story_list
+                # Example stories (we'll dynamically add later)
+                OneLineListItem:
+                    text: "Story 1"
+                    on_release: app.load_story("Story 1")
+                OneLineListItem:
+                    text: "Story 2"
+                    on_release: app.load_story("Story 2")
+
+<StoryScreen>:
+    name: 'story'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDToolbar:
+            title: "Story Title"
+            elevation: 10
+            left_action_items: [["arrow-left", lambda x: app.go_back_home()]]
+        ScrollView:
+            MDLabel:
+                id: story_content
+                text: "Story content will appear here..."
+                padding: 10
+                halign: "left"
+                valign: "top"
+                size_hint_y: None
+                height: self.texture_size[1]

@@ -1,0 +1,27 @@
+import { ArrowUpRight, ClipboardCheck, FilePlus2, FileText, MessageCircle, MoreHorizontal, Search, UserCheck, Users, UserPlus } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { StatCard } from '../components/StatCard'
+import { StatusBadge } from '../components/StatusBadge'
+import { useApp } from '../context/AppContext'
+
+export function ManagerDashboard() {
+  const { workers, notifications } = useApp()
+  const navigate = useNavigate()
+  const [query, setQuery] = useState('')
+  const [status, setStatus] = useState('All')
+  const totalDocuments = workers.reduce((total, worker) => total + worker.documents.length, 0)
+  const pendingDocuments = workers.reduce((total, worker) => total + worker.documents.filter((document) => document.status === 'Pending').length, 0)
+  const unread = notifications.filter((notification) => !notification.read).length
+  const filteredWorkers = useMemo(() => workers.filter((worker) => {
+    const matchesSearch = `${worker.name} ${worker.username} ${worker.branch}`.toLowerCase().includes(query.toLowerCase())
+    return matchesSearch && (status === 'All' || worker.status === status)
+  }), [workers, query, status])
+
+  return <>
+    <div className="page-heading-row"><div><span className="eyebrow">JUMATATU, 17 OKTOBA 2026</span><h1>Karibu, Admin <span className="heading-wave">✦</span></h1><p>Hapa kuna muhtasari wa shughuli za usambazaji leo.</p></div><div className="heading-actions"><Link to="/manager/notifications" className="secondary-button"><MessageCircle size={17} />Tuma Ujumbe</Link><Link to="/manager/register" className="primary-button"><UserPlus size={17} />Sajili Mfanyakazi</Link></div></div>
+    <div className="stat-grid"><StatCard label="Wafanyakazi wote" value={workers.length} detail="Wafanyakazi kwenye mfumo" icon={Users} tone="navy" /><StatCard label="PDF zilizopokelewa" value={totalDocuments} detail="Jumla ya nyaraka" icon={FileText} tone="mint" /><StatCard label="PDF mpya" value={pendingDocuments || 4} detail="Zinasubiri kuangaliwa" icon={FilePlus2} tone="amber" /><StatCard label="Ujumbe mpya" value={unread} detail="Haujasomwa bado" icon={MessageCircle} tone="violet" /></div>
+    <section className="content-card workers-card"><div className="card-heading"><div><span className="eyebrow">WAFANYAKAZI</span><h2>Wafanyakazi wote <span className="heading-count">{workers.length}</span></h2></div><Link to="/manager/workers" className="text-link">Angalia wote <ArrowUpRight size={15} /></Link></div><div className="table-toolbar"><div className="table-search"><Search size={17} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tafuta mfanyakazi..." /></div><select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Filter status"><option value="All">Status zote</option><option value="Active">Active</option><option value="Inactive">Inactive</option></select><button className="icon-button table-more" aria-label="Chaguo zaidi"><MoreHorizontal size={19} /></button></div><div className="data-table-wrap"><table className="data-table"><thead><tr><th>MFANYAKAZI</th><th>ENEO / BRANCH</th><th>DOCUMENTS</th><th>LAST UPLOAD</th><th>STATUS</th><th /></tr></thead><tbody>{filteredWorkers.map((worker) => <tr key={worker.id}><td><div className="person-cell"><div className={`avatar avatar-${worker.id.slice(2, 6)}`}>{worker.name.split(' ').map((part) => part[0]).join('')}</div><div><strong>{worker.name}</strong><span>{worker.username}</span></div></div></td><td><span className="branch-cell">{worker.branch}</span></td><td><span className="document-count"><FileText size={15} />{worker.documents.length} PDFs</span></td><td><span className="date-cell">{worker.lastUpload}</span></td><td><StatusBadge status={worker.status} /></td><td><button className="view-button" onClick={() => navigate(`/manager/workers/${worker.id}`)}>Angalia <ArrowUpRight size={14} /></button></td></tr>)}</tbody></table>{filteredWorkers.length === 0 && <div className="empty-state"><UserCheck size={26} /><strong>Hakuna mfanyakazi aliyepatikana</strong><span>Badilisha utafutaji au filter yako.</span></div>}</div></section>
+    <div className="dashboard-bottom-grid"><section className="content-card mini-panel"><div className="card-heading"><div><span className="eyebrow">ACTIVITY</span><h2>Muhtasari wa leo</h2></div><ClipboardCheck size={20} className="muted-icon" /></div><div className="activity-list"><div><span className="activity-dot activity-green" /><p><strong>Asha Mushi</strong> ametuma Taarifa_Wiki_41_Asha.pdf <small>dakika 35 zilizopita</small></p></div><div><span className="activity-dot activity-blue" /><p><strong>Juma Said</strong> ame-login kwenye mfumo <small>saa 16:42</small></p></div><div><span className="activity-dot activity-amber" /><p>Notification mpya imetumwa kwa wafanyakazi wote <small>jana, 08:45</small></p></div></div></section><section className="content-card mini-panel quick-panel"><div className="card-heading"><div><span className="eyebrow">SHORTCUTS</span><h2>Vitendo vya haraka</h2></div></div><div className="shortcut-grid"><Link to="/manager/register"><UserPlus size={18} /><span>Sajili mfanyakazi</span><ArrowUpRight size={14} /></Link><Link to="/manager/notifications"><MessageCircle size={18} /><span>Tuma ujumbe</span><ArrowUpRight size={14} /></Link><Link to="/manager/documents"><FileText size={18} /><span>Angalia documents</span><ArrowUpRight size={14} /></Link></div></section></div>
+  </>
+}

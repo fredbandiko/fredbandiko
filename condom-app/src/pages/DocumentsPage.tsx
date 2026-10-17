@@ -1,0 +1,22 @@
+import { Download, Eye, FileText, Send, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Modal } from '../components/Modal'
+import { StatusBadge } from '../components/StatusBadge'
+import { useApp } from '../context/AppContext'
+import type { DocumentRecord } from '../types'
+
+export function DocumentsPage() {
+  const { currentUser, workers, updateDocument, deleteDocument, showToast } = useApp()
+  const [preview, setPreview] = useState<{ document: DocumentRecord; worker: string } | null>(null)
+  const isManager = currentUser?.role === 'manager'
+  const allDocuments = workers.flatMap((worker) => worker.documents.map((document) => ({ document, worker })))
+  const ownWorker = workers.find((worker) => worker.id === currentUser?.workerId) ?? workers[0]
+  const documents = isManager ? allDocuments : ownWorker.documents.map((document) => ({ document, worker: ownWorker }))
+  const download = (document: DocumentRecord) => { const blob = new Blob([`Mock PDF: ${document.name}`], { type: 'application/pdf' }); const url = URL.createObjectURL(blob); const anchor = window.document.createElement('a'); anchor.href = url; anchor.download = document.name; anchor.click(); URL.revokeObjectURL(url); showToast('Mock PDF imeandaliwa kwa download.', 'info') }
+  return <>
+    <div className="page-heading-row"><div><span className="eyebrow">DOCUMENT LIBRARY</span><h1>{isManager ? 'Documents zote' : 'Documents zangu'}</h1><p>{isManager ? 'Angalia nyaraka zote zilizopokelewa kutoka kwa wafanyakazi.' : 'Simamia PDF ulizopakia kwenye mfumo.'}</p></div>{!isManager && <Link to="/worker" className="primary-button"><Send size={16} />Upload PDF</Link>}</div>
+    <section className="content-card documents-card"><div className="card-heading"><div><span className="eyebrow">{isManager ? 'ALL DOCUMENTS' : 'MY FILES'}</span><h2>{documents.length} documents</h2></div><span className="archive-count"><FileText size={15} />Mock archive</span></div><div className="data-table-wrap"><table className="data-table"><thead><tr><th>FILE NAME</th>{isManager && <th>WORKER</th>}<th>DATE</th><th>SIZE</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody>{documents.map(({ document, worker }) => <tr key={`${worker.id}-${document.id}`}><td><div className="file-cell"><div className="document-icon"><FileText size={17} /></div><strong>{document.name}</strong></div></td>{isManager && <td><Link className="person-link" to={`/manager/workers/${worker.id}`}>{worker.name}</Link></td>}<td>{document.uploadedAt}</td><td>{document.size}</td><td><StatusBadge status={document.status} /></td><td><div className="row-actions"><button className="view-button" onClick={() => setPreview({ document, worker: worker.name })}><Eye size={14} />Preview</button><button className="icon-button" onClick={() => download(document)} aria-label="Download"><Download size={16} /></button>{!isManager && <>{(document.status === 'Draft' || document.status === 'Pending') && <button className="icon-button action-send" onClick={() => { updateDocument(worker.id, document.id, 'Sent'); showToast('Document imetumwa kwa manager.') }} aria-label="Send"><Send size={16} /></button>}<button className="icon-button danger-icon" onClick={() => { if (window.confirm('Una uhakika unataka kufuta document hii?')) deleteDocument(worker.id, document.id) }} aria-label="Delete"><Trash2 size={16} /></button></>}</div></td></tr>)}</tbody></table>{documents.length === 0 && <div className="empty-state"><FileText size={26} /><strong>Hakuna documents bado</strong><span>Upload PDF yako ya kwanza kwenye dashboard.</span></div>}</div></section>
+    <Modal open={Boolean(preview)} title="Preview ya document" subtitle={preview ? `${preview.document.name} · ${preview.worker}` : ''} onClose={() => setPreview(null)}><div className="pdf-preview"><div className="pdf-page"><div className="pdf-page-mark">KDM</div><h3>{preview?.document.name}</h3><div className="pdf-line pdf-line-wide" /><div className="pdf-line" /><div className="pdf-line pdf-line-short" /><div className="pdf-placeholder"><FileText size={30} /><span>PDF preview</span></div><div className="pdf-line" /><div className="pdf-line pdf-line-wide" /></div></div><div className="modal-footer"><button className="secondary-button" onClick={() => setPreview(null)}>Funga</button>{preview && <button className="primary-button" onClick={() => download(preview.document)}><Download size={16} />Download</button>}</div></Modal>
+  </>
+}

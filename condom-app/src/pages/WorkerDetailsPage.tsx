@@ -1,0 +1,24 @@
+import { ArrowLeft, Download, Eye, FileText, Mail, MapPin, MessageCircle, Phone, Send, UserRound } from 'lucide-react'
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Modal } from '../components/Modal'
+import { StatusBadge } from '../components/StatusBadge'
+import { useApp } from '../context/AppContext'
+import type { DocumentRecord } from '../types'
+
+export function WorkerDetailsPage() {
+  const { workerId } = useParams()
+  const navigate = useNavigate()
+  const { workers, sendMessage, showToast } = useApp()
+  const worker = workers.find((item) => item.id === workerId)
+  const [preview, setPreview] = useState<DocumentRecord | null>(null)
+  if (!worker) return <div className="not-found"><h2>Mfanyakazi hakupatikana</h2><Link to="/manager">Rudi Dashboard</Link></div>
+  const download = (document: DocumentRecord) => { const blob = new Blob([`Mock PDF: ${document.name}`], { type: 'application/pdf' }); const url = URL.createObjectURL(blob); const anchor = window.document.createElement('a'); anchor.href = url; anchor.download = document.name; anchor.click(); URL.revokeObjectURL(url); showToast('Mock PDF imeandaliwa kwa download.', 'info') }
+  return <>
+    <div className="breadcrumb-row"><button className="back-link" onClick={() => navigate(-1)}><ArrowLeft size={16} />Rudi kwa wafanyakazi</button><span>/</span><strong>{worker.name}</strong></div>
+    <div className="page-heading-row detail-heading"><div><span className="eyebrow">WORKER PROFILE</span><h1>{worker.name}</h1><p>Maelezo ya akaunti na taarifa za nyaraka za mfanyakazi.</p></div><div className="heading-actions"><button className="secondary-button" onClick={() => sendMessage(`Ujumbe kwa ${worker.name}`, `Habari ${worker.name}, tafadhali angalia taarifa zako.`, worker.id)}><MessageCircle size={17} />Tuma Ujumbe</button><StatusBadge status={worker.status} /></div></div>
+    <section className="profile-card content-card"><div className="profile-intro"><div className="avatar avatar-profile">{worker.name.split(' ').map((part) => part[0]).join('')}</div><div><h2>{worker.name}</h2><p>@{worker.username}</p><span className="profile-role"><UserRound size={14} />Field worker</span></div></div><div className="profile-contact"><div><Mail size={16} /><span>{worker.email}</span></div><div><Phone size={16} /><span>{worker.phone}</span></div><div><MapPin size={16} /><span>{worker.branch}</span></div></div><div className="profile-stats"><div><strong>{worker.documents.length}</strong><span>Documents</span></div><div><strong>{worker.lastUpload === '—' ? '—' : worker.lastUpload.split(',')[0]}</strong><span>Last upload</span></div><div><strong>{worker.status}</strong><span>Account status</span></div></div></section>
+    <section className="content-card documents-card"><div className="card-heading"><div><span className="eyebrow">DOCUMENT ARCHIVE</span><h2>PDF za {worker.name.split(' ')[0]}</h2></div><span className="archive-count"><FileText size={15} />{worker.documents.length} files</span></div><div className="data-table-wrap"><table className="data-table"><thead><tr><th>FILE NAME</th><th>UPLOAD DATE</th><th>SIZE</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody>{worker.documents.map((document) => <tr key={document.id}><td><div className="file-cell"><div className="document-icon"><FileText size={17} /></div><strong>{document.name}</strong></div></td><td>{document.uploadedAt}</td><td>{document.size}</td><td><StatusBadge status={document.status} /></td><td><div className="row-actions"><button className="view-button" onClick={() => setPreview(document)}><Eye size={14} />Preview</button><button className="icon-button" onClick={() => download(document)} aria-label="Download"><Download size={16} /></button></div></td></tr>)}</tbody></table>{worker.documents.length === 0 && <div className="empty-state"><FileText size={26} /><strong>Hakuna documents bado</strong><span>Worker bado hajapakia taarifa.</span></div>}</div></section>
+    <Modal open={Boolean(preview)} title="Preview ya document" subtitle="Mock PDF preview — hakuna file halisi inayohifadhiwa." onClose={() => setPreview(null)}><div className="pdf-preview"><div className="pdf-page"><div className="pdf-page-mark">KDM</div><h3>{preview?.name}</h3><div className="pdf-line pdf-line-wide" /><div className="pdf-line" /><div className="pdf-line pdf-line-short" /><div className="pdf-placeholder"><FileText size={30} /><span>PDF preview</span></div><div className="pdf-line" /><div className="pdf-line pdf-line-wide" /></div></div><div className="modal-footer"><button className="secondary-button" onClick={() => setPreview(null)}>Funga</button>{preview && <button className="primary-button" onClick={() => download(preview)}><Download size={16} />Download</button>}</div></Modal>
+  </>
+}

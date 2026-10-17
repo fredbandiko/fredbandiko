@@ -1,0 +1,15 @@
+{
+  "routes": [
+    { "path": "/login", "title": "KDM System Login" },
+    { "path": "/manager", "title": "Manager Dashboard" },
+    { "path": "/manager/workers", "title": "Wafanyakazi" },
+    { "path": "/manager/workers/:workerId", "title": "Worker Details" },
+    { "path": "/manager/documents", "title": "Documents" },
+    { "path": "/manager/notifications", "title": "Notification Center" },
+    { "path": "/manager/register", "title": "Sajili Mfanyakazi" },
+    { "path": "/manager/settings", "title": "Settings" },
+    { "path": "/worker", "title": "Worker Dashboard" },
+    { "path": "/worker/documents", "title": "Documents Zangu" },
+    { "path": "/worker/notifications", "title": "Ujumbe" }
+  ]
+}

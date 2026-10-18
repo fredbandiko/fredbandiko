@@ -1,52 +1,75 @@
 # CONDOM APP — KDM System
 
-Frontend prototype ya **Mfumo wa Usimamizi wa Usambazaji wa Kondomu**. App hii inaonyesha namna Manager/Admin anavyoweza kupokea na kufuatilia taarifa za PDF kutoka kwa wafanyakazi, huku worker akiweza kupakia, kutuma na kusimamia documents zake.
+CONDOM APP ni mfumo wa demo wa kusimamia taarifa za usambazaji wa kondomu. Manager/Admin anaweza kuona workers, documents na notifications; worker anaweza kuingia, kupakia PDF, kutuma document, kuona status na kusoma ujumbe.
 
-## Jinsi ya ku-run
+## Hali ya sasa
 
-```bash
-pnpm install
-pnpm dev
-```
+Hii ni **frontend prototype/demo** ya React + TypeScript + Vite. Authentication, workers, documents na notifications huhifadhiwa kwenye `localStorage` ya browser ili demo iweze kubaki na state baada ya refresh kwenye browser hiyo. Hakuna backend, database, real PDF object storage, password hashing, multi-device sync, audit trail, virus scanning au production-grade authorization.
 
-Fungua `http://localhost:3000`. Kwa production build:
+Usitumie credentials za demo kwa taarifa halisi za watu.
 
-```bash
-pnpm build
-pnpm preview
-```
+## Features
+
+- Manager dashboard yenye worker search/filter na summary cards.
+- Worker dashboard yenye PDF drag-and-drop upload, PDF-only validation na limit ya 10MB.
+- Document preview/download ya mock PDF, send na delete kwa worker.
+- Notification center yenye recipient filtering, unread counts, read state na kutuma ujumbe.
+- Worker registration ya demo inayohifadhi account ndani ya browser na kuzuia duplicate usernames.
+- Protected routes kwa manager na worker.
+- Responsive sidebar/drawer, mobile layouts, accessible labels na keyboard focus states.
 
 ## Demo credentials
 
 | Role | Username | Password |
 | --- | --- | --- |
 | Manager / Admin | `admin` | `123` |
-| Mfanyakazi | `mfanyakazi` | `123` |
+| Worker | `mfanyakazi` | `123` |
 
-Credentials hizi ni za demo prototype pekee; hazipaswi kutumika kama authentication ya production.
+Accounts zinazoundwa kupitia Manager > Sajili Mfanyakazi zinaweza kujaribiwa kwenye browser hiyo kwa username na password uliyochagua. Hii ni behavior ya demo tu; password haipaswi kuhifadhiwa hivi kwenye production.
 
-## Features zilizopo
+## Run locally
 
-Manager ana Manager Dashboard yenye summary cards, search na filter ya wafanyakazi, worker details, document archive, preview/download ya mock PDF, notification center, kutuma ujumbe kwa worker mmoja au wote, kusajili worker mpya na settings screen.
+Requirements: Node.js 20+, pnpm 10.6+.
 
-Worker ana dashboard yenye summary cards, drag-and-drop PDF upload, PDF-only validation, upload loading state, mock documents list, preview, send, download na delete; pia ana notification inbox inayoruhusu kufungua ujumbe na ku-mark read.
+```bash
+pnpm install
+pnpm dev
+```
 
-Navigation inalindwa kwa role kupitia React Router. Login state huhifadhiwa kwenye localStorage kwa demo ili refresh ibaki kwenye session. Data yote ni mock/local state na huanza upya ukireload kwa mazingira mapya.
+Fungua `http://localhost:3000`.
 
-## Files muhimu
+## Verify and build
 
-- `src/main.tsx` — app entry point, routing na protected routes.
-- `src/context/AppContext.tsx` — mock session, workers, documents, notifications na actions.
-- `src/data.ts` — mock workers Asha Mushi, Juma Said, Neema Joseph na sample notifications/documents.
-- `src/components/` — AppShell, Sidebar, Topbar, StatCard, Modal, StatusBadge na ProtectedRoute.
-- `src/pages/` — screens zote za manager na worker.
-- `src/index.css` — design system, dashboard layout na responsive styles.
-- `public/manus-routes.json` — page route manifest ya Preview.
+```bash
+pnpm build
+pnpm preview
+```
 
-## Mock features zitakazohitaji backend baadaye
+`pnpm build` huendesha TypeScript project build na Vite production build. Output huwekwa kwenye `dist/`.
 
-Kwa production, project itahitaji server authentication yenye password hashing na roles, database ya users/documents/notifications, object storage yenye access control kwa PDF, audit trail, real-time notification delivery, server-side validation, virus scanning, pagination, API error handling na password reset. Download/preview ya sasa inatumia mock Blob; hakuna PDF inayopakiwa kwenye storage halisi.
+## GitHub Pages deployment
 
-## Design
+Repository hii hutumia workflow iliyopo kwenye `.github/workflows/deploy-pages.yml`. Workflow hu-build `condom-app/`, huunda `404.html` kwa SPA refresh fallback, na hu-deploy kupitia GitHub Pages.
 
-UI inatumia navy dark blue, mint green, white na misty light-gray background. Desktop ina sidebar na data tables; kwenye simu sidebar inakuwa drawer na rows zinajipanga kwa matumizi ya touch.
+Ili kuamilisha deployment kwenye GitHub:
+
+1. Fungua repository **Settings > Pages**.
+2. Chagua **GitHub Actions** kama source.
+3. Push mabadiliko kwenye `main`, au endesha workflow kwa **Actions > Deploy Condom App to GitHub Pages > Run workflow**.
+4. URL inayotarajiwa ni `https://fredbandiko.github.io/fredbandiko/` baada ya workflow kufanikiwa.
+
+Vite na React Router zimewekwa kutumia base path ya `/fredbandiko/` kwenye production, hivyo assets na nested routes zifanye kazi kwenye project URL hiyo.
+
+## Production roadmap
+
+Kabla ya kutumia mfumo huu kwa taarifa halisi, ongeza backend yenye secure authentication/password hashing, role-based server authorization, database ya users/workers/documents/notifications, private object storage ya PDF, server-side validation, audit logs, password reset, rate limiting na virus scanning. GitHub Pages inaweza kuh-host frontend ya static pekee; haiwezi kuendesha Node.js backend au private database.
+
+## Main files
+
+- `src/main.tsx` — routes na providers.
+- `src/context/AppContext.tsx` — demo auth, state na localStorage persistence.
+- `src/data.ts` — initial demo data.
+- `src/pages/` — Manager, Worker, Documents, Notifications, Register na Settings screens.
+- `src/components/` — shell, navigation, reusable cards, modal na badges.
+- `vite.config.ts` — Vite base path na dev server.
+- `../.github/workflows/deploy-pages.yml` — GitHub Pages build/deploy workflow.

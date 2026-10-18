@@ -14,7 +14,8 @@ export function RegisterWorkerPage() {
     if (form.initialPassword !== form.confirmPassword) { setError('Password na confirm password hazifanani.'); return }
     if (form.initialPassword.length < 3) { setError('Password ya awali iwe na angalau characters 3.'); return }
     setError('')
-    addWorker({ name: form.name, username: form.username, email: form.email, phone: form.phone, branch: form.branch, status: form.status, initialPassword: form.initialPassword })
+    const created = addWorker({ name: form.name, username: form.username, email: form.email, phone: form.phone, branch: form.branch, status: form.status, initialPassword: form.initialPassword })
+    if (!created) { setError('Username hiyo tayari ipo. Chagua username nyingine.'); return }
     showToast('Mfanyakazi amesajiliwa kwa mafanikio.')
     navigate('/manager/workers')
   }

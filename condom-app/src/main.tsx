@@ -49,4 +49,4 @@ function AppRoutes() {
   </Routes>
 }
 
-createRoot(document.getElementById('root')!).render(<StrictMode><AppProvider><BrowserRouter><AppRoutes /></BrowserRouter></AppProvider></StrictMode>)
+createRoot(document.getElementById('root')!).render(<StrictMode><AppProvider><BrowserRouter basename={import.meta.env.BASE_URL}><AppRoutes /></BrowserRouter></AppProvider></StrictMode>)

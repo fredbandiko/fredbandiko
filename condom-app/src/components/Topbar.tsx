@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext'
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const { currentUser, notifications } = useApp()
-  const unread = notifications.filter((item) => !item.read).length
+  const unread = notifications.filter((item) => !item.read && (currentUser?.role === 'manager' || item.recipient === 'all-workers' || item.recipient === currentUser?.workerId)).length
   return <header className="topbar">
     <button className="mobile-menu" onClick={onMenu} aria-label="Fungua menu"><Menu size={22} /></button>
     <div className="topbar-search"><Search size={17} /><input placeholder="Tafuta kwenye mfumo..." aria-label="Tafuta" /></div>

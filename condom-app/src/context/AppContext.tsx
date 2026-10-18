@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { initialNotifications, initialWorkers } from '../data'
 import type { AppUser, DocumentRecord, NewWorker, Notification, Worker } from '../types'
 
@@ -11,7 +11,7 @@ type AppContextValue = {
   toast: Toast | null
   login: (username: string, password: string) => AppUser | null
   logout: () => void
-  addWorker: (worker: NewWorker) => void
+  addWorker: (worker: NewWorker) => boolean
   addDocument: (workerId: string, document: DocumentRecord) => void
   updateDocument: (workerId: string, documentId: string, status: DocumentRecord['status']) => void
   deleteDocument: (workerId: string, documentId: string) => void
@@ -28,31 +28,40 @@ const demoUsers: AppUser[] = [
   { id: 'worker-user', name: 'Mfanyakazi', username: 'mfanyakazi', role: 'worker', workerId: 'w-asha' },
 ]
 
-const getStoredUser = (): AppUser | null => {
+function readStorage<T>(key: string, fallback: T): T {
   try {
-    const saved = localStorage.getItem('kdm-user')
-    return saved ? JSON.parse(saved) : null
+    const saved = localStorage.getItem(key)
+    return saved ? JSON.parse(saved) as T : fallback
   } catch {
-    return null
+    return fallback
   }
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<AppUser | null>(getStoredUser)
-  const [workers, setWorkers] = useState<Worker[]>(initialWorkers)
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications)
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(() => readStorage<AppUser | null>('kdm-user', null))
+  const [workers, setWorkers] = useState<Worker[]>(() => readStorage('kdm-workers', initialWorkers))
+  const [notifications, setNotifications] = useState<Notification[]>(() => readStorage('kdm-notifications', initialNotifications))
   const [toast, setToast] = useState<Toast | null>(null)
+
+  useEffect(() => { localStorage.setItem('kdm-workers', JSON.stringify(workers)) }, [workers])
+  useEffect(() => { localStorage.setItem('kdm-notifications', JSON.stringify(notifications)) }, [notifications])
 
   const showToast = (message: string, type: Toast['type'] = 'success') => setToast({ message, type })
   const clearToast = () => setToast(null)
 
   const login = (username: string, password: string) => {
-    if (password !== '123') return null
     const user = demoUsers.find((item) => item.username === username)
-    if (!user) return null
-    setCurrentUser(user)
-    localStorage.setItem('kdm-user', JSON.stringify(user))
-    return user
+    if (user && password === '123') {
+      setCurrentUser(user)
+      localStorage.setItem('kdm-user', JSON.stringify(user))
+      return user
+    }
+    const worker = workers.find((item) => item.username === username && (item.demoPassword === password || (password === '123' && !item.demoPassword)))
+    if (!worker) return null
+    const workerUser: AppUser = { id: worker.id, name: worker.name, username: worker.username, role: 'worker', workerId: worker.id }
+    setCurrentUser(workerUser)
+    localStorage.setItem('kdm-user', JSON.stringify(workerUser))
+    return workerUser
   }
 
   const logout = () => {
@@ -61,9 +70,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   const addWorker = (worker: NewWorker) => {
-    const newWorker: Worker = { ...worker, id: `w-${Date.now()}`, lastUpload: '—', documents: [] }
+    if (workers.some((item) => item.username.toLowerCase() === worker.username.trim().toLowerCase())) return false
+    const newWorker: Worker = { ...worker, name: worker.name.trim(), username: worker.username.trim().toLowerCase(), email: worker.email.trim().toLowerCase(), demoPassword: worker.initialPassword, id: `w-${Date.now()}`, lastUpload: '—', documents: [] }
     setWorkers((current) => [newWorker, ...current])
     showToast(`${worker.name} amesajiliwa kwenye mfumo.`)
+    return true
   }
 
   const addDocument = (workerId: string, document: DocumentRecord) => {

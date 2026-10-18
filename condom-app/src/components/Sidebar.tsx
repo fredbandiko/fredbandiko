@@ -19,8 +19,9 @@ const workerLinks = [
 ]
 
 export function Sidebar({ role, mobileOpen, onClose }: { role: Role; mobileOpen: boolean; onClose: () => void }) {
-  const { logout } = useApp()
+  const { currentUser, notifications, logout } = useApp()
   const links = role === 'manager' ? managerLinks : workerLinks
+  const unread = notifications.filter((item) => !item.read && (role === 'manager' || item.recipient === 'all-workers' || item.recipient === currentUser?.workerId)).length
   return <aside className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
     <div className="sidebar-brand">
       <div className="brand-mark">K<span>•</span></div>
@@ -29,7 +30,7 @@ export function Sidebar({ role, mobileOpen, onClose }: { role: Role; mobileOpen:
     </div>
     <div className="sidebar-section-label">MENU KUU</div>
     <nav className="sidebar-nav">
-      {links.map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} onClick={onClose} className={({ isActive }) => isActive ? 'nav-item nav-item-active' : 'nav-item'}><Icon size={18} /><span>{label}</span>{label === 'Notification Center' && <span className="nav-count">3</span>}</NavLink>)}
+      {links.map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} onClick={onClose} className={({ isActive }) => isActive ? 'nav-item nav-item-active' : 'nav-item'}><Icon size={18} /><span>{label}</span>{(label === 'Notification Center' || label === 'Ujumbe') && unread > 0 && <span className="nav-count">{unread}</span>}</NavLink>)}
     </nav>
     <div className="sidebar-help">
       <div className="help-icon"><ShieldCheck size={18} /></div>

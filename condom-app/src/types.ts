@@ -22,6 +22,8 @@ export type Worker = {
   id: string
   name: string
   username: string
+  /** Demo-only credential; replace with server authentication before production. */
+  demoPassword?: string
   email: string
   phone: string
   branch: string
